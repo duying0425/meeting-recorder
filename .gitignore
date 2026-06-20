@@ -1,0 +1,20 @@
+# Python virtual environment
+venv/
+.venv/
+
+# Audio recordings folder
+recordings/*.wav
+
+# Test files
+test_recording.wav
+test_recording_fixed.wav
+
+# Python compile cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE configurations
+.vscode/
+.idea/

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Audio Recorder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-microphone-lines logo-icon"></i>
+                <h1>Meeting Recorder</h1>
+            </div>
+            <div id="connection-status" class="status-badge online">
+                <span class="status-dot"></span>
+                <span class="status-text">Ready</span>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <main class="app-main">
+            <!-- Setup & Control Panel -->
+            <section class="panel-section control-panel">
+                <div class="glass-card config-card" id="config-card-element">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-sliders"></i> Audio Sources</h2>
+                        <button id="btn-refresh" class="btn-icon" title="Refresh audio devices">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="select-mic"><i class="fa-solid fa-microphone"></i> Microphone (Your Voice)</label>
+                        <select id="select-mic" class="custom-select">
+                            <option value="">Loading microphone devices...</option>
+                        </select>
+                        <div class="volume-slider-container">
+                            <div class="slider-labels">
+                                <span>Mic Gain (Software Boost)</span>
+                                <span id="val-mic-gain">1.5x</span>
+                            </div>
+                            <input type="range" id="slider-mic-gain" min="0.5" max="3.0" step="0.1" value="1.5" class="custom-slider">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="select-loopback"><i class="fa-solid fa-headphones"></i> Speaker / System Audio (Others)</label>
+                        <select id="select-loopback" class="custom-select">
+                            <option value="">Loading loopback devices...</option>
+                        </select>
+                        <div class="volume-slider-container">
+                            <div class="slider-labels">
+                                <span>System Rec Vol (Scale)</span>
+                                <span id="val-loopback-vol">0.5x</span>
+                            </div>
+                            <input type="range" id="slider-loopback-vol" min="0.1" max="1.2" step="0.1" value="0.5" class="custom-slider">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card recording-card">
+                    <div class="timer-display" id="timer-display-element">00:00:00</div>
+                    
+                    <div class="record-button-container">
+                        <button id="btn-record" class="record-btn ready" title="Start Recording">
+                            <i class="fa-solid fa-circle play-icon"></i>
+                            <i class="fa-solid fa-square stop-icon hidden"></i>
+                        </button>
+                    </div>
+
+                    <div class="recording-filename hidden" id="filename-display-element">
+                        <i class="fa-solid fa-file-audio"></i> <span id="span-filename">Meeting_20260620_180000.wav</span>
+                    </div>
+
+                    <!-- Live Signal Visualizers -->
+                    <div class="visualizer-container">
+                        <!-- Microphone Level -->
+                        <div class="visualizer-row">
+                            <div class="visualizer-label">
+                                <span><i class="fa-solid fa-microphone"></i> You</span>
+                                <span id="val-mic-db">-100 dB</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div id="meter-mic" class="progress-bar-fill mic-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- System Audio Level -->
+                        <div class="visualizer-row">
+                            <div class="visualizer-label">
+                                <span><i class="fa-solid fa-volume-high"></i> System Audio</span>
+                                <span id="val-loopback-db">-100 dB</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div id="meter-loopback" class="progress-bar-fill loopback-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History / Saved Recordings -->
+            <section class="panel-section history-section">
+                <div class="glass-card history-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-folder-open"></i> Recordings Folder</h2>
+                        <span class="recording-count" id="recording-count-badge">0 files</span>
+                    </div>
+                    
+                    <div class="recordings-list-wrapper">
+                        <table id="table-recordings" class="recordings-table">
+                            <thead>
+                                <tr>
+                                    <th>Filename</th>
+                                    <th>Created Date</th>
+                                    <th>Duration</th>
+                                    <th>File Size</th>
+                                    <th class="text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordings-list-body">
+                                <!-- Dynamic rows -->
+                                <tr class="empty-state-row">
+                                    <td colspan="5" class="empty-state">
+                                        <i class="fa-solid fa-circle-exclamation empty-icon"></i>
+                                        <p>No audio files found. Start recording a meeting above.</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Audio Player Modal/Bar -->
+    <div id="audio-preview-bar" class="audio-player-bar hidden">
+        <div class="player-info">
+            <i class="fa-solid fa-compact-disc spin-icon"></i>
+            <div>
+                <span id="player-filename" class="player-title">Meeting_Recording.wav</span>
+            </div>
+        </div>
+        <audio id="html-audio-player" controls class="custom-audio-element"></audio>
+        <button id="btn-close-player" class="btn-close" title="Close player">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
