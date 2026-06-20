@@ -24,7 +24,7 @@ It mixes the streams in real-time and saves them as a standard WAV file. Control
 2. Double-click **`MeetingRecorder.exe`**.
 3. The server starts silently in the background, and your default web browser will automatically open to `http://127.0.0.1:5000`.
 4. Select your audio sources, click **Record**, and manage your recording.
-5. Click **Exit App** in the top-right header to close the background server cleanly when finished.
+5. Simply close the browser tab to automatically stop and close the background server (via built-in heartbeat watchdog).
 
 ### Option B: Running from Source
 1. Double-click **`run.bat`** in the root directory.
