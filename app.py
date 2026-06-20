@@ -10,8 +10,9 @@ import soundfile as sf
 import pyaudiowpatch as pyaudio
 from flask import Flask, jsonify, request, send_from_directory, render_template
 
-# Enforce UTF-8 stdout
-sys.stdout.reconfigure(encoding='utf-8')
+# Enforce UTF-8 stdout if console is allocated
+if sys.stdout is not None:
+    sys.stdout.reconfigure(encoding='utf-8')
 
 # Configure templates and static folders for PyInstaller one-file packaging
 if getattr(sys, 'frozen', False):
