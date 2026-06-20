@@ -685,3 +685,9 @@ body {
     transform: scale(1.2);
     background: #60a5fa;
 }
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}

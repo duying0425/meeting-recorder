@@ -13,7 +13,13 @@ from flask import Flask, jsonify, request, send_from_directory, render_template
 # Enforce UTF-8 stdout
 sys.stdout.reconfigure(encoding='utf-8')
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+# Configure templates and static folders for PyInstaller one-file packaging
+if getattr(sys, 'frozen', False):
+    template_folder = os.path.join(sys._MEIPASS, 'templates')
+    static_folder = os.path.join(sys._MEIPASS, 'static')
+    app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
+else:
+    app = Flask(__name__, static_folder='static', template_folder='templates')
 
 RECORDINGS_DIR = os.path.join(os.getcwd(), 'recordings')
 os.makedirs(RECORDINGS_DIR, exist_ok=True)
@@ -370,6 +376,26 @@ def adjust_gains():
         'mic_gain': current_mic_gain,
         'loopback_vol': current_loopback_vol
     })
+
+@app.route('/api/shutdown', methods=['POST'])
+def shutdown():
+    global recording_active, stop_event, recording_thread
+    
+    # Stop recording if active
+    with state_lock:
+        if recording_active:
+            stop_event.set()
+            
+    if recording_thread:
+        recording_thread.join(timeout=3.0)
+        
+    def terminate_process():
+        time.sleep(0.5)
+        # Force terminate process cleanly
+        os._exit(0)
+        
+    threading.Thread(target=terminate_process, daemon=True).start()
+    return jsonify({'success': True, 'message': 'Application shutting down...'})
 
 @app.route('/api/status', methods=['GET'])
 def get_status():

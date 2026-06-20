@@ -376,6 +376,28 @@ document.addEventListener('DOMContentLoaded', () => {
     btnRefresh.addEventListener('click', loadDevices);
     btnClosePlayer.addEventListener('click', closeAudioPlayer);
 
+    const btnExit = document.getElementById('btn-exit');
+    btnExit.addEventListener('click', async () => {
+        if (confirm("Are you sure you want to exit and shut down the recorder application?")) {
+            try {
+                if (isRecording) {
+                    clearInterval(statusInterval);
+                    isRecording = false;
+                }
+                document.body.innerHTML = `
+                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; font-family:'Outfit',sans-serif; background:linear-gradient(135deg, #0a0d16 0%, #151c30 100%); color:#f3f4f6; text-align:center; padding:1rem;">
+                        <i class="fa-solid fa-power-off" style="font-size:4rem; color:#ef4444; margin-bottom:1.5rem;"></i>
+                        <h1 style="font-size:2rem; font-weight:600; margin-bottom:0.5rem;">Application Closed</h1>
+                        <p style="color:#9ca3af; max-width:400px; line-height:1.6;">The recorder server has been shut down successfully. You can now close this browser tab.</p>
+                    </div>
+                `;
+                await fetch('/api/shutdown', { method: 'POST' });
+            } catch (err) {
+                console.log('App shutdown requested.');
+            }
+        }
+    });
+
     // Initial load
     loadDevices();
     loadRecordings();
