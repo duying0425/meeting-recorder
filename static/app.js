@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
             recordingBadge.classList.add('offline');
             badgeText.textContent = 'Disconnected';
         });
-    }, 2000);
+    }, 1000);
 
     // Initial load
     loadDevices();

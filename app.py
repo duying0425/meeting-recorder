@@ -412,8 +412,8 @@ def heartbeat_watchdog():
     # Give the browser 15 seconds to load and send its first heartbeat
     time.sleep(15.0)
     while True:
-        # If no heartbeat is received for 8 seconds, assume the browser tab has been closed
-        if time.time() - last_heartbeat_time > 8.0:
+        # If no heartbeat is received for 3 seconds, assume the browser tab has been closed
+        if time.time() - last_heartbeat_time > 3.0:
             print("No heartbeat detected (web page closed). Shutting down server...")
             with state_lock:
                 if recording_active:
@@ -421,7 +421,7 @@ def heartbeat_watchdog():
             if recording_thread:
                 recording_thread.join(timeout=3.0)
             os._exit(0)
-        time.sleep(2.0)
+        time.sleep(1.0)
 
 @app.route('/api/status', methods=['GET'])
 def get_status():
