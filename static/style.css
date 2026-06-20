@@ -691,3 +691,14 @@ body {
     align-items: center;
     gap: 1rem;
 }
+
+.status-badge.offline {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+}
+
+.status-badge.offline .status-dot {
+    background-color: var(--text-secondary);
+    box-shadow: none;
+}

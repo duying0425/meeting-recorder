@@ -397,6 +397,31 @@ def shutdown():
     threading.Thread(target=terminate_process, daemon=True).start()
     return jsonify({'success': True, 'message': 'Application shutting down...'})
 
+# Heartbeat endpoints for automatic shutdown when browser tab is closed
+last_heartbeat_time = time.time()
+
+@app.route('/api/heartbeat', methods=['POST'])
+def heartbeat():
+    global last_heartbeat_time
+    last_heartbeat_time = time.time()
+    return jsonify({'success': True})
+
+def heartbeat_watchdog():
+    global last_heartbeat_time, recording_active, stop_event, recording_thread
+    # Give the browser 15 seconds to load and send its first heartbeat
+    time.sleep(15.0)
+    while True:
+        # If no heartbeat is received for 8 seconds, assume the browser tab has been closed
+        if time.time() - last_heartbeat_time > 8.0:
+            print("No heartbeat detected (web page closed). Shutting down server...")
+            with state_lock:
+                if recording_active:
+                    stop_event.set()
+            if recording_thread:
+                recording_thread.join(timeout=3.0)
+            os._exit(0)
+        time.sleep(2.0)
+
 @app.route('/api/status', methods=['GET'])
 def get_status():
     global recording_active, recording_start_time, latest_db_mic, latest_db_loopback, current_filename
@@ -459,6 +484,9 @@ def delete_recording(filename):
     return jsonify({'success': False, 'message': 'File not found'}), 404
 
 def run_server():
+    # Start watchdog thread to auto shutdown when browser tab is closed
+    threading.Thread(target=heartbeat_watchdog, daemon=True).start()
+    
     # Start web browser after 1 second delay
     def open_browser():
         time.sleep(1.0)

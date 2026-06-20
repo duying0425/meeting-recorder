@@ -398,6 +398,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Start heartbeat to keep the background server alive
+    setInterval(() => {
+        fetch('/api/heartbeat', { method: 'POST' }).catch(err => {
+            // Server has shut down or is unreachable
+            recordingBadge.classList.remove('online', 'recording');
+            recordingBadge.classList.add('offline');
+            badgeText.textContent = 'Disconnected';
+        });
+    }, 2000);
+
     // Initial load
     loadDevices();
     loadRecordings();
