@@ -488,13 +488,15 @@ def run_server():
     # Start watchdog thread to auto shutdown when browser tab is closed
     threading.Thread(target=heartbeat_watchdog, daemon=True).start()
     
+    port = int(os.environ.get('PORT', 5500))
+    
     # Start web browser after 1 second delay
     def open_browser():
         time.sleep(1.0)
-        webbrowser.open("http://127.0.0.1:5000")
+        webbrowser.open(f"http://127.0.0.1:{port}")
         
     threading.Thread(target=open_browser, daemon=True).start()
-    app.run(host='127.0.0.1', port=5000, debug=False)
+    app.run(host='127.0.0.1', port=port, debug=False)
 
 if __name__ == '__main__':
     run_server()
